@@ -4,47 +4,38 @@
 
 using namespace std;
 
- Class representing a single Shipment
 class Shipment {
 private:
   int id;
   string source;
   string destination;
-  string
-      status; // Ex: packed, dispatched, in transit, out for delivery, delivered
-  string eta; // Estimated Delivery Time
+  string status;
+  string eta;
 
-   Arrays instead of vectors
   static const int MAX_HISTORY = 20;
-  string statusHistory[MAX_HISTORY]; // Shipment History / Status Timeline
+  string statusHistory[MAX_HISTORY];
   int historyCount;
 
 public:
-   Default constructor needed for array initialization
   Shipment() : id(0), historyCount(0) {}
 
-   Parameterized constructor (Constructor Overloading)
   Shipment(int i, const string &src, const string &dest,
            const string &expectedArrival)
       : id(i), source(src), destination(dest), status("packed"),
         eta(expectedArrival), historyCount(0) {
-     Initialize timeline
     addHistory("packed - Initial status setup");
   }
 
-   Getters
   int getId() const { return id; }
   string getStatus() const { return status; }
   string getSource() const { return source; }
   string getDestination() const { return destination; }
 
-   Setters
   void setStatus(const string &newStatus) {
     status = newStatus;
     addHistory(newStatus + " - Status updated");
   }
 
-   Add to history array
   void addHistory(const string &historyItem) {
     if (historyCount < MAX_HISTORY) {
       statusHistory[historyCount++] = historyItem;
@@ -54,7 +45,6 @@ public:
     }
   }
 
-   Display basic shipment details
   void displayInfo() const {
     cout << "Shipment ID   : " << id << endl;
     cout << "Source        : " << source << endl;
@@ -64,7 +54,6 @@ public:
     cout << "----------------------------------" << endl;
   }
 
-   Display full timeline
   void displayTimeline() const {
     cout << "\n--- Status Timeline for Shipment ID: " << id << " ---" << endl;
     for (int i = 0; i < historyCount; ++i) {
@@ -73,7 +62,6 @@ public:
     cout << "---------------------------------------" << endl;
   }
 
-   File handling: Save to file
   void saveToFile(ofstream &outFile) const {
     outFile << id << "\n"
             << source << "\n"
@@ -86,16 +74,15 @@ public:
     }
   }
 
-   File handling: Load from file
   void loadFromFile(ifstream &inFile) {
     inFile >> id;
-    inFile.ignore(10000, '\n'); // clear newline from buffer
+    inFile.ignore(10000, '\n');
     getline(inFile, source);
     getline(inFile, destination);
     getline(inFile, eta);
     getline(inFile, status);
     inFile >> historyCount;
-    inFile.ignore(10000, '\n'); // clear newline from buffer
+    inFile.ignore(10000, '\n');
 
     for (int i = 0; i < historyCount; ++i) {
       getline(inFile, statusHistory[i]);
@@ -103,7 +90,6 @@ public:
   }
 };
 
- Class to manage all shipments
 class SupplyChainSystem {
 private:
   static const int MAX_SHIPMENTS = 100;
@@ -119,7 +105,6 @@ public:
 
   ~SupplyChainSystem() { saveData(); }
 
-   Load shipments from file
   void loadData() {
     ifstream inFile(dataFile);
     if (inFile.is_open()) {
@@ -127,7 +112,7 @@ public:
       if (inFile.fail()) {
         shipmentCount = 0;
       } else {
-        inFile.ignore(10000, '\n'); // clear newline from buffer
+        inFile.ignore(10000, '\n');
         for (int i = 0; i < shipmentCount; ++i) {
           shipments[i].loadFromFile(inFile);
         }
@@ -139,7 +124,6 @@ public:
     }
   }
 
-   Save shipments to file
   void saveData() const {
     ofstream outFile(dataFile);
     if (outFile.is_open()) {
@@ -153,7 +137,6 @@ public:
     }
   }
 
-   1. Add a new shipment (With ETA)
   void addShipment(int id, const string &source, const string &destination,
                    const string &eta) {
     if (shipmentCount >= MAX_SHIPMENTS) {
@@ -173,17 +156,13 @@ public:
     shipmentCount++;
     cout << "Shipment added successfully! Default status set to 'packed'."
          << endl;
-    saveData(); // Auto-save after changes
+    saveData();
   }
 
-   --- COMPILE-TIME POLYMORPHISM (Function Overloading) ---
-   2. Overloaded Method: Add a new shipment without known ETA
   void addShipment(int id, const string &source, const string &destination) {
-     Automatically delegates to the main method with a default ETA value
     addShipment(id, source, destination, "TBD (To Be Determined)");
   }
 
-   1. Track shipment by ID and show history
   void trackShipment(int id) const {
     for (int i = 0; i < shipmentCount; ++i) {
       if (shipments[i].getId() == id) {
@@ -196,8 +175,6 @@ public:
     cout << "Error: Shipment with ID " << id << " not found." << endl;
   }
 
-   --- COMPILE-TIME POLYMORPHISM (Function Overloading) ---
-   2. Overloaded Method: Track shipment by Source and Destination Route
   void trackShipment(const string &source, const string &destination) const {
     bool found = false;
     for (int i = 0; i < shipmentCount; ++i) {
@@ -217,7 +194,6 @@ public:
     }
   }
 
-   View All Shipments Dashboard
   void viewAllShipments() const {
     if (shipmentCount == 0) {
       cout << "\nNo shipments in the system." << endl;
@@ -230,7 +206,6 @@ public:
     cout << "=============================================" << endl;
   }
 
-   Update status of an existing shipment
   void updateStatus(int id, const string &newStatus) {
     for (int i = 0; i < shipmentCount; ++i) {
       if (shipments[i].getId() == id) {
@@ -241,20 +216,19 @@ public:
         }
         shipments[i].setStatus(newStatus);
         cout << "Status updated successfully to '" << newStatus << "'." << endl;
-        saveData(); // Auto-save after changes
+        saveData();
         return;
       }
     }
     cout << "Error: Shipment with ID " << id << " not found." << endl;
   }
 
-   Confirm delivery (mark as delivered)
   void confirmDelivery(int id) {
     for (int i = 0; i < shipmentCount; ++i) {
       if (shipments[i].getId() == id) {
         shipments[i].setStatus("delivered");
         cout << "Delivery confirmed for Shipment ID " << id << "." << endl;
-        saveData(); // Auto-save after changes
+        saveData();
         return;
       }
     }
@@ -262,7 +236,6 @@ public:
   }
 };
 
- Helper function to display the menu
 void displayMenu() {
   cout << "\n=============================================" << endl;
   cout << "  Logistics & Supply Chain Tracking System" << endl;
@@ -297,15 +270,14 @@ int main() {
       cout << "Enter Shipment ID: ";
       cin >> id;
       cout << "Enter Source: ";
-      cin.ignore(10000, '\n'); // clear newline character from buffer
+      cin.ignore(10000, '\n');
       getline(cin, src);
       cout << "Enter Destination: ";
       getline(cin, dest);
       cout << "Enter Estimated Delivery Time (ETA): ";
       getline(cin, eta);
 
-      system.addShipment(id, src, dest,
-                         eta); // Calls first addShipment overload
+      system.addShipment(id, src, dest, eta);
 
     } else if (choice == 2) {
       int id;
@@ -313,30 +285,28 @@ int main() {
       cout << "Enter Shipment ID: ";
       cin >> id;
       cout << "Enter Source: ";
-      cin.ignore(10000, '\n'); // clear newline character from buffer
+      cin.ignore(10000, '\n');
       getline(cin, src);
       cout << "Enter Destination: ";
       getline(cin, dest);
 
-      system.addShipment(id, src, dest); // Calls second addShipment overload
-                                          (Compile-Time Polymorphism)
+      system.addShipment(id, src, dest);
 
     } else if (choice == 3) {
       int id;
       cout << "Enter Shipment ID to track: ";
       cin >> id;
-      system.trackShipment(id); // Calls first trackShipment overload
+      system.trackShipment(id);
 
     } else if (choice == 4) {
       string src, dest;
       cout << "Enter Source: ";
-      cin.ignore(10000, '\n'); // clear newline character from buffer
+      cin.ignore(10000, '\n');
       getline(cin, src);
       cout << "Enter Destination: ";
       getline(cin, dest);
 
-      system.trackShipment(src, dest); // Calls second trackShipment overload
-                                        (Compile-Time Polymorphism)
+      system.trackShipment(src, dest);
 
     } else if (choice == 5) {
       int id;
@@ -371,7 +341,7 @@ int main() {
         break;
       default:
         cout << "Invalid status choice. Update failed." << endl;
-        continue; // Skip updating
+        continue;
       }
       system.updateStatus(id, newStatus);
 
